@@ -1,0 +1,54 @@
+.wrap {
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  font: inherit;
+  font-size: 18px;
+  padding: 12px 14px;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+}
+
+.list {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 4px);
+  list-style: none;
+  background: var(--paper-raised);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.option {
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.option + .option {
+  border-top: 1px solid var(--rule);
+}
+
+.option[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.note {
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+.link {
+  background: none;
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 700;
+}

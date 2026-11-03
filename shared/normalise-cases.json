@@ -1,0 +1,14 @@
+{
+ "about": "Answer normalisation cases both pipeline/trivia/answers.py and site/src/core/answers.ts must agree on.",
+ "cases": [
+  {"in": "  Maltesers®  ", "out": "maltesers"},
+  {"in": "Crème Egg", "out": "creme egg"},
+  {"in": "Ben & Jerry's", "out": "ben and jerrys"},
+  {"in": "McVitie's Digestives", "out": "mcvities digestives"},
+  {"in": "Coca-Cola Original Taste", "out": "coca cola original taste"},
+  {"in": "7UP", "out": "7up"},
+  {"in": "HÄAGEN-DAZS", "out": "haagen dazs"},
+  {"in": "Hula   Hoops!!", "out": "hula hoops"},
+  {"in": "", "out": ""}
+ ]
+}

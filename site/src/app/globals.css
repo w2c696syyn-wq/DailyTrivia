@@ -1,0 +1,93 @@
+/* Shared design system: a well-kept archive of curious everyday things.
+   Warm paper, black ink, one accent per game (set on the game's wrapper as --accent). */
+
+:root {
+  --paper: #f5efe3;
+  --paper-raised: #fbf7ef;
+  --ink: #1c1a17;
+  --ink-soft: #5e574b;
+  --rule: #d9cfbd;
+  --accent: #1c1a17;
+  --good: #2f6b3a;
+  --column: 480px;
+  --font-serif: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-atkinson), system-ui, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1e1c19;
+    --paper-raised: #282521;
+    --ink: #ece5d8;
+    --ink-soft: #a89f8f;
+    --rule: #3d3832;
+    --good: #7cc48a;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #1e1c19;
+  --paper-raised: #282521;
+  --ink: #ece5d8;
+  --ink-soft: #a89f8f;
+  --rule: #3d3832;
+  --good: #7cc48a;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font: 17px/1.5 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.column {
+  width: 100%;
+  max-width: var(--column);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

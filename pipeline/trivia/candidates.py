@@ -15,7 +15,7 @@ from datetime import date
 from pathlib import Path
 
 from trivia.answers import normalise
-from trivia.ingredients import label_lines
+from trivia.ingredients import clean_text, label_lines
 from trivia.off_candidates import DEFAULT_MIN_SCANS, find_candidates
 from trivia.trending import weekly_top
 from trivia.wikimedia import fetch_range
@@ -40,7 +40,8 @@ def ingredient_x_queue(root: Path, parquet: str = OFF_PARQUET, min_scans: int = 
     root = Path(root)
     banked = {normalise(x["name"]) for x in _bank(root, "ingredient-x")}
     queue = [
-        {**asdict(c), "lines": label_lines(c.ingredients), "status": "pending"}
+        {**asdict(c), "name": clean_text(c.name), "brands": clean_text(c.brands),
+         "lines": label_lines(c.ingredients), "status": "pending"}
         for c in find_candidates(parquet, min_scans=min_scans)
         if normalise(c.name) not in banked and len(label_lines(c.ingredients)) >= MIN_LINES
     ]

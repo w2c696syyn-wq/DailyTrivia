@@ -8,7 +8,7 @@ from trivia.off_candidates import Candidate
 def test_ingredient_x_queue_has_preview_lines_and_skips_banked(tmp_path, monkeypatch):
     monkeypatch.setattr(candidates, "find_candidates", lambda *a, **k: [
         Candidate("1", "Nutella", "Ferrero", "hazelnut-spreads", "Sugar, palm oil, salt (1%)", 900),
-        Candidate("2", "Walkers Ready Salted", "Walkers", "crisps", "Potatoes, oil, salt", 800),
+        Candidate("2", "Walkers Ready Salted", "Walkers &amp; Co", "crisps", "Potatoes, oil, salt", 800),
     ])
     bank = tmp_path / "content/ingredient-x/bank.json"
     bank.parent.mkdir(parents=True)
@@ -19,6 +19,7 @@ def test_ingredient_x_queue_has_preview_lines_and_skips_banked(tmp_path, monkeyp
     assert [q["name"] for q in queue] == ["Walkers Ready Salted"]
     assert queue[0]["lines"] == ["salt", "oil", "Potatoes"]
     assert queue[0]["status"] == "pending"
+    assert queue[0]["brands"] == "Walkers & Co"
 
 
 def test_trending_queue_has_weekly_top_lists(tmp_path, monkeypatch):

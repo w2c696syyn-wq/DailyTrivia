@@ -4,7 +4,7 @@ Layout under the repo root:
   content/games.json             launch date per game
   content/<game>/bank.json       reviewed items, ready to schedule
   puzzles/<game>/<date>.json     one file per UK day; private, released by the Worker
-  public/answers/<game>.json     type-ahead answer list, shipped with the site
+  site/public/answers/<game>.json  type-ahead answer list, shipped with the site
 
   python -m trivia.build build ingredient-x --from 2027-03-01 --days 60
   python -m trivia.build check            (nightly: the next 7 days of every game)
@@ -35,8 +35,10 @@ def _write(path: Path, data) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
-def _launch(root: Path, game: str) -> date:
-    return date.fromisoformat(_read(root / "content/games.json")[game]["launch"])
+def _launch(root: Path, game: str) -> date | None:
+    """None until a launch date is chosen; banks can fill up before then."""
+    launch = _read(root / "content/games.json")[game].get("launch")
+    return date.fromisoformat(launch) if launch else None
 
 
 def _existing(root: Path, game: str) -> dict[date, dict]:
@@ -72,12 +74,14 @@ assert GAMES.keys() == GAME_FIELDS.keys()
 
 
 def _answer_ids(root: Path, game: str) -> set[str]:
-    path = root / "public/answers" / f"{game}.json"
+    path = root / "site/public/answers" / f"{game}.json"
     return {a["id"] for a in _read(path)} if path.exists() else set()
 
 
 def build(root: Path, game: str, start: date, days: int, seed: int = 0) -> list[Path]:
     root, spec, launch = Path(root), GAMES[game], _launch(root, game)
+    if launch is None:
+        raise ValueError(f"{game} has no launch date yet: set it in content/games.json before building puzzles")
     bank = _read(root / "content" / game / "bank.json")
     existing = _existing(root, game)
 
@@ -88,7 +92,7 @@ def build(root: Path, game: str, start: date, days: int, seed: int = 0) -> list[
     if game == "ingredient-x":
         answers = build_answer_list([{"id": spec["id"](x), "name": x["name"], "aliases": x.get("aliases", [])}
                                      for x in bank])
-        _write(root / "public/answers/ingredient-x.json", [asdict(a) for a in answers])
+        _write(root / "site/public/answers/ingredient-x.json", [asdict(a) for a in answers])
 
     before = [p for d, p in sorted(existing.items()) if d < start]
     plan = schedule(bank, start, days, spec["group"], seed=seed, item_id=spec["id"],
@@ -107,6 +111,8 @@ def build(root: Path, game: str, start: date, days: int, seed: int = 0) -> list[
 def check(root: Path, game: str, today: date, days: int = CHECK_DAYS) -> list[str]:
     """Problems with the next `days` puzzles of one game, as readable lines."""
     root, launch = Path(root), _launch(Path(root), game)
+    if launch is None:
+        return []
     existing = _existing(root, game)
     answer_ids = _answer_ids(root, game)
     # Days before launch need no puzzle, so the nightly job stays quiet until then.

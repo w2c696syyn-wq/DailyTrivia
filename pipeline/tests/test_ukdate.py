@@ -1,4 +1,6 @@
+import json
 from datetime import date, datetime, timezone
+from pathlib import Path
 
 import pytest
 
@@ -53,3 +55,17 @@ class TestPuzzleNumber:
     def test_round_trip(self):
         for n in (1, 2, 28, 245, 1000):
             assert puzzle_number(date_for_puzzle(n, self.LAUNCH), self.LAUNCH) == n
+
+
+SHARED = json.loads((Path(__file__).parents[2] / "shared/ukdate-cases.json").read_text(encoding="utf-8"))
+
+
+@pytest.mark.parametrize("case", SHARED["ukDate"], ids=lambda c: c["utc"])
+def test_shared_uk_date_cases(case):
+    instant = datetime.fromisoformat(case["utc"].replace("Z", "+00:00"))
+    assert uk_date(instant).isoformat() == case["uk"], case["why"]
+
+
+@pytest.mark.parametrize("case", SHARED["puzzleNumber"], ids=lambda c: c["day"])
+def test_shared_puzzle_number_cases(case):
+    assert puzzle_number(date.fromisoformat(case["day"]), date.fromisoformat(case["launch"])) == case["n"]

@@ -24,6 +24,11 @@ def parquet(tmp_path):
            ['en:united-kingdom'], [{'lang': 'en', 'text': 'Farine de blé, sucre'}], 1500, 'fr')
         ) AS t(code, product_name, brands, categories_tags, countries_tags, ingredients_text, unique_scans_n, lang)
     """)
+    con.execute("""ALTER TABLE food ADD COLUMN ingredients VARCHAR DEFAULT 'structured'""")
+    con.execute("""
+        INSERT INTO food VALUES ('7', [{'lang': 'en', 'text': 'No English Label'}], 'Z', ['en:crisps'],
+           ['en:united-kingdom'], [{'lang': 'fr', 'text': 'Sel'}], 2000, 'en', 'structured')
+    """)
     con.execute(f"COPY food TO '{path.as_posix()}' (FORMAT parquet)")
     return path
 

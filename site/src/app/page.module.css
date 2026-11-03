@@ -1,0 +1,26 @@
+.main {
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
+.list {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.card {
+  display: block;
+  padding: 16px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-left: 6px solid var(--accent);
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.card p {
+  color: var(--ink-soft);
+  margin-top: 4px;
+}

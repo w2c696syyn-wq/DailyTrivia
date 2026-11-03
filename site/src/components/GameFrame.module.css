@@ -1,0 +1,42 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-top: 6px solid var(--accent);
+}
+
+.header {
+  padding-top: 20px;
+}
+
+.title {
+  font-size: 34px;
+}
+
+.how {
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+.how summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+}
+
+.how ul {
+  margin: 8px 0 0 20px;
+  display: grid;
+  gap: 4px;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: 16px;
+  padding-bottom: 24px;
+  border-top: 1px solid var(--rule);
+  font-size: 14px;
+  color: var(--ink-soft);
+  display: grid;
+  gap: 6px;
+}

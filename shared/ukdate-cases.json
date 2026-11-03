@@ -1,0 +1,22 @@
+{
+ "about": "UK-date cases both the Python pipeline and the TypeScript site must agree on. 2027: BST 28 Mar to 31 Oct.",
+ "ukDate": [
+  {"utc": "2027-01-14T23:59:59Z", "uk": "2027-01-14", "why": "winter: UK midnight is UTC midnight"},
+  {"utc": "2027-01-15T00:00:00Z", "uk": "2027-01-15", "why": "winter: UK midnight is UTC midnight"},
+  {"utc": "2027-06-30T22:59:59Z", "uk": "2027-06-30", "why": "summer: UK day starts at 23:00 UTC"},
+  {"utc": "2027-06-30T23:00:00Z", "uk": "2027-07-01", "why": "summer: UK day starts at 23:00 UTC"},
+  {"utc": "2027-03-27T23:59:59Z", "uk": "2027-03-27", "why": "night the clocks go forward"},
+  {"utc": "2027-03-28T00:00:00Z", "uk": "2027-03-28", "why": "night the clocks go forward"},
+  {"utc": "2027-10-30T22:59:59Z", "uk": "2027-10-30", "why": "night the clocks go back"},
+  {"utc": "2027-10-30T23:00:00Z", "uk": "2027-10-31", "why": "night the clocks go back"},
+  {"utc": "2027-10-31T23:59:59Z", "uk": "2027-10-31", "why": "the 25-hour day"},
+  {"utc": "2027-11-01T00:00:00Z", "uk": "2027-11-01", "why": "the 25-hour day"}
+ ],
+ "puzzleNumber": [
+  {"launch": "2027-03-01", "day": "2027-03-01", "n": 1},
+  {"launch": "2027-03-01", "day": "2027-03-28", "n": 28},
+  {"launch": "2027-03-01", "day": "2027-03-29", "n": 29},
+  {"launch": "2027-03-01", "day": "2027-11-01", "n": 246},
+  {"launch": "2027-03-01", "day": "2028-03-01", "n": 367}
+ ]
+}

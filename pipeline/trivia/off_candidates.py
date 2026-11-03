@@ -12,7 +12,7 @@ likely players know it. Candidates still go through hand review.
 from dataclasses import dataclass
 from pathlib import Path
 
-DEFAULT_MIN_SCANS = 100
+DEFAULT_MIN_SCANS = 20  # UK coverage is thin: about 2,100 products reach 20 (Nov 2026)
 
 
 @dataclass(frozen=True)
@@ -40,19 +40,25 @@ def find_candidates(parquet: str | Path, min_scans: int = DEFAULT_MIN_SCANS, lim
     con = duckdb.connect()
     if source.startswith("http"):
         con.execute("INSTALL httpfs; LOAD httpfs;")
+    # A CTE, because the export has its own `ingredients` column and a WHERE
+    # clause would test that instead of the English text picked out here.
     rows = con.execute(f"""
-        SELECT code,
-               {_text_in('product_name', 'en,main')} AS name,
-               coalesce(brands, '') AS brands,
-               coalesce(replace(categories_tags[-1], 'en:', ''), '') AS category,
-               {_text_in('ingredients_text', 'en')} AS ingredients,
-               unique_scans_n AS scans
-        FROM read_parquet(?)
-        WHERE list_contains(countries_tags, 'en:united-kingdom')
-          -- Main language English: drops imports whose "en" text is really French etc.
-          AND lang = 'en'
-          AND unique_scans_n >= ?
-          AND ingredients IS NOT NULL AND trim(ingredients) <> ''
+        WITH uk AS (
+            SELECT code,
+                   {_text_in('product_name', 'en,main')} AS name,
+                   coalesce(brands, '') AS brands,
+                   coalesce(replace(categories_tags[-1], 'en:', ''), '') AS category,
+                   {_text_in('ingredients_text', 'en')} AS english_ingredients,
+                   unique_scans_n AS scans
+            FROM read_parquet(?)
+            WHERE list_contains(countries_tags, 'en:united-kingdom')
+              -- Main language English: drops imports whose "en" text is really French etc.
+              AND lang = 'en'
+              AND unique_scans_n >= ?
+        )
+        SELECT code, name, brands, category, english_ingredients, scans
+        FROM uk
+        WHERE english_ingredients IS NOT NULL AND trim(english_ingredients) <> ''
           AND name IS NOT NULL
         ORDER BY scans DESC, code
         LIMIT ?

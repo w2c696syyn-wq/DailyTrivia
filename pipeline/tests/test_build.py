@@ -56,7 +56,7 @@ def test_hand_edited_lines_win(root):
 
 def test_build_writes_answer_list(root):
     build(root, "ingredient-x", LAUNCH, days=1, seed=1)
-    answers = json.loads((root / "public/answers/ingredient-x.json").read_text(encoding="utf-8"))
+    answers = json.loads((root / "site/public/answers/ingredient-x.json").read_text(encoding="utf-8"))
     assert len(answers) == 24
     assert {"id", "name", "aliases"} <= set(answers[0])
 
@@ -98,6 +98,13 @@ def test_check_ignores_days_before_launch(root):
     assert check(root, "ingredient-x", today=LAUNCH - timedelta(days=30), days=7) == []
     assert check(root, "ingredient-x", today=LAUNCH - timedelta(days=2), days=3) == [
         "ingredient-x 2027-03-01: missing"]
+
+
+def test_unlaunched_game_needs_nothing_and_cannot_build(root):
+    write(root / "content/games.json", {"ingredient-x": {"launch": None}, "trending": {"launch": None}})
+    assert check(root, "ingredient-x", today=LAUNCH) == []
+    with pytest.raises(ValueError, match="launch date"):
+        build(root, "ingredient-x", LAUNCH, days=3)
 
 
 def test_cli_check_exit_code(root, capsys):

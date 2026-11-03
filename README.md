@@ -1,8 +1,9 @@
 # Daily Trivia
 
 Five standalone daily games on one shared codebase. The build plan lives in the
-"Daily Trivia Site — Build Plan" doc. This repo currently holds the content
-pipeline for phase 1 (Ingredient X and Trending). The Next.js site comes next.
+"Daily Trivia Site — Build Plan" doc. This repo holds phase 1 (Ingredient X
+and Trending): the Python content pipeline and the Next.js site. The
+Cloudflare Worker that releases each day's puzzle comes next.
 
 ## Layout
 
@@ -10,11 +11,14 @@ pipeline for phase 1 (Ingredient X and Trending). The Next.js site comes next.
 | --- | --- |
 | `pipeline/trivia/` | Python: UK dates, puzzle format, data sources, scheduling, build |
 | `pipeline/tests/` | pytest suite |
-| `content/games.json` | Launch date per game (placeholder: 2027-03-01) |
+| `content/games.json` | Launch date per game; `null` until you choose one |
 | `content/<game>/bank.json` | Reviewed items ready to schedule |
 | `review/review.html` | Local review page for candidate queues |
 | `puzzles/<game>/<date>.json` | One file per UK day; released by the Worker, never public |
-| `public/answers/<game>.json` | Type-ahead answer list shipped with the site |
+| `site/public/answers/<game>.json` | Type-ahead answer list shipped with the site |
+| `site/src/core/` | TypeScript: UK dates, scoring, answer search, game rules (browser and Worker) |
+| `site/src/games/` | One component per game |
+| `shared/` | Test cases both Python and TypeScript must pass, so they never disagree |
 
 ## Set up
 
@@ -22,6 +26,16 @@ pipeline for phase 1 (Ingredient X and Trending). The Next.js site comes next.
 python -m venv .venv
 .venv/Scripts/python -m pip install -r pipeline/requirements.txt
 .venv/Scripts/python -m pytest -q
+```
+
+Site (Node.js LTS):
+
+```
+cd site
+npm install
+npm test
+npm run dev      # plays built-in sample puzzles at http://localhost:3000
+npm run build    # static site in site/out/
 ```
 
 Commands below run from the repo root with `PYTHONPATH=pipeline`.

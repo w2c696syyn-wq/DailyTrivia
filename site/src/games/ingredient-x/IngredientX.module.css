@@ -1,0 +1,135 @@
+/* Styled after a printed UK food label: condensed bold type, heavy black rules. */
+
+.game {
+  display: grid;
+  gap: 20px;
+}
+
+.message {
+  padding: 32px 0;
+  color: var(--ink-soft);
+}
+
+.label {
+  background: #fff;
+  color: #111;
+  border: 3px solid #111;
+  padding: 12px 14px 14px;
+  font-family: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  font-stretch: condensed;
+}
+
+.labelTitle {
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-bottom: 8px solid #111;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.lines {
+  list-style: none;
+}
+
+.line,
+.hidden {
+  padding: 6px 0;
+  border-bottom: 1px solid #111;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.line {
+  animation: slide-in 220ms ease-out;
+}
+
+.hidden {
+  color: #bbb;
+  letter-spacing: -0.05em;
+}
+
+.printed {
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.giveaway {
+  background: var(--accent);
+  color: #fff;
+  padding: 0 3px;
+}
+
+.category {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 4px solid #111;
+  font-size: 16px;
+}
+
+.guesses {
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-size: 15px;
+}
+
+.wrong {
+  color: var(--ink-soft);
+}
+
+.right {
+  color: var(--good);
+  font-weight: 700;
+}
+
+.controls {
+  display: grid;
+  gap: 10px;
+}
+
+.skip {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 10px;
+  color: var(--ink-soft);
+}
+
+.result {
+  display: grid;
+  gap: 10px;
+  text-align: center;
+  padding: 16px 0 32px;
+}
+
+.tier {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.answer {
+  font-size: 32px;
+}
+
+.fact {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+.small {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}

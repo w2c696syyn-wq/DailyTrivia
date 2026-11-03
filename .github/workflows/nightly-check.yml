@@ -6,7 +6,7 @@ on:
   schedule:
     - cron: "0 20 * * *" # 20:00 UTC: evening UK time, all year
   push:
-    paths: ["content/**", "puzzles/**", "pipeline/**"]
+    paths: ["content/**", "puzzles/**", "pipeline/**", "shared/**", "site/**"]
   workflow_dispatch:
 
 jobs:
@@ -20,3 +20,14 @@ jobs:
       - run: pip install -r pipeline/requirements.txt
       - run: python -m pytest -q
       - run: PYTHONPATH=pipeline python -m trivia.build check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+        working-directory: site
+      - run: npm test
+        working-directory: site
+      - run: npm run build
+        working-directory: site
