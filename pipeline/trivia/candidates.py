@@ -17,7 +17,7 @@ from pathlib import Path
 from trivia.answers import normalise
 from trivia.ingredients import clean_text, label_lines
 from trivia.off_candidates import DEFAULT_MIN_SCANS, find_candidates
-from trivia.trending import weekly_top
+from trivia.trending import WEEKLY_TOP, drop_background, weekly_top
 from trivia.wikimedia import fetch_range
 
 MIN_LINES = 3  # fewer and there is nothing to reveal
@@ -51,7 +51,9 @@ def ingredient_x_queue(root: Path, parquet: str = OFF_PARQUET, min_scans: int = 
 def trending_queue(root: Path, start: date, end: date) -> Path:
     root = Path(root)
     banked = {x["week"] for x in _bank(root, "trending")}
-    weeks = weekly_top(fetch_range(start, end, root / "pipeline/data/wikimedia"))
+    # Take extra per week so there are still 50 left after background titles go.
+    weeks = weekly_top(fetch_range(start, end, root / "pipeline/data/wikimedia"), n=2 * WEEKLY_TOP)
+    weeks = {m: top[:WEEKLY_TOP] for m, top in drop_background(weeks).items()}
     queue = [
         {"week": monday.isoformat(), "top": [list(r) for r in top], "status": "pending"}
         for monday, top in weeks.items()

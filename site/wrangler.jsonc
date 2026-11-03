@@ -1,0 +1,15 @@
+{
+  // One Worker serves every game's domain. Static files come from the
+  // Next.js export in out/; the Worker sees each request first so it can
+  // map domains to games and release only today's puzzle.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "daily-trivia",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "404-page"
+  }
+}

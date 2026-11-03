@@ -18,7 +18,18 @@ SITE_NAMESPACES = {"Special", "Wikipedia", "File", "Portal", "Help", "Template",
 _YEAR = re.compile(r"(?<!\d)(1[89]\d\d|20\d\d)(?!\d)")
 
 # Pages near the top of every week's list, which would make every puzzle look alike.
-ALWAYS_POPULAR = {"Google", "YouTube", "Facebook", "Wikipedia", "Cleopatra", "XXX", "Pornhub"}
+ALWAYS_POPULAR = {"Google", "YouTube", "Facebook", "Wikipedia", "Cleopatra"}
+
+# Adult sites, and pages that only get traffic from people searching for them.
+BLOCKED = {"XXX", "XXXX", "XXXX_(beer)", "XXX_(film_series)", "XXX:_Return_of_Xander_Cage", ".xxx",
+           "XHamster", "Pornhub", "XVideos", "XNXX", "Sex"}
+
+# drop_background: a title in at least this share of weeks is background noise...
+BACKGROUND_SHARE = 0.15
+# ...unless its views that week are this many times its usual weekly views.
+SPIKE = 3.0
+# Fewer weeks than this and frequency says nothing, so drop_background leaves them alone.
+MIN_WEEKS = 20
 
 
 def is_excluded(title: str) -> bool:
@@ -26,7 +37,7 @@ def is_excluded(title: str) -> bool:
 
     The hand check for sensitive weeks happens later; this is the automatic pass.
     """
-    if title.split(":", 1)[0] in SITE_NAMESPACES or title in ALWAYS_POPULAR:
+    if title.split(":", 1)[0] in SITE_NAMESPACES or title in ALWAYS_POPULAR or title in BLOCKED:
         return True
     # Main_Page has no namespace but is a site page all the same.
     if title == "Main_Page":
@@ -51,3 +62,24 @@ def weekly_top(daily: dict[date, list[tuple[str, int]]], n: int = WEEKLY_TOP) ->
         for monday in sorted(views)
         if len(days_seen[monday]) == 7
     }
+
+
+def drop_background(weeks: dict[date, list[tuple[str, int]]], share: float = BACKGROUND_SHARE,
+                    spike: float = SPIKE) -> dict[date, list[tuple[str, int]]]:
+    """Remove titles that chart in most weeks (bots, default searches, perennial
+    favourites), except in a week where that title genuinely spikes."""
+    if len(weeks) < MIN_WEEKS:
+        return weeks
+    seen: dict[str, list[int]] = defaultdict(list)
+    for top in weeks.values():
+        for title, views in top:
+            seen[title].append(views)
+
+    def keep(title: str, views: int) -> bool:
+        counts = seen[title]
+        if len(counts) < share * len(weeks):
+            return True
+        usual = sorted(counts)[len(counts) // 2]
+        return views >= spike * usual
+
+    return {monday: [(t, v) for t, v in top if keep(t, v)] for monday, top in weeks.items()}

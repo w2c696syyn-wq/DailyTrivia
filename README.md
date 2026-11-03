@@ -2,8 +2,8 @@
 
 Five standalone daily games on one shared codebase. The build plan lives in the
 "Daily Trivia Site — Build Plan" doc. This repo holds phase 1 (Ingredient X
-and Trending): the Python content pipeline and the Next.js site. The
-Cloudflare Worker that releases each day's puzzle comes next.
+and Trending): the Python content pipeline, the Next.js site, and the
+Cloudflare Worker that releases each day's puzzle.
 
 ## Layout
 
@@ -18,6 +18,7 @@ Cloudflare Worker that releases each day's puzzle comes next.
 | `site/public/answers/<game>.json` | Type-ahead answer list shipped with the site |
 | `site/src/core/` | TypeScript: UK dates, scoring, answer search, game rules (browser and Worker) |
 | `site/src/games/` | One component per game |
+| `site/worker/` | Cloudflare Worker: today's puzzle by UK date, one domain per game |
 | `shared/` | Test cases both Python and TypeScript must pass, so they never disagree |
 
 ## Set up
@@ -35,8 +36,24 @@ cd site
 npm install
 npm test
 npm run dev      # plays built-in sample puzzles at http://localhost:3000
-npm run build    # static site in site/out/
+npm run build    # bundles puzzles/ into the Worker, static site in site/out/
+npm run preview  # build, then run the real Worker at http://localhost:8787
 ```
+
+With `npm run preview`, http://ingredient-x.localhost:8787/ shows the game the
+way its own domain will. It plays only if `puzzles/` has a puzzle for today.
+
+## Going live (Cloudflare)
+
+1. Create a free Cloudflare account, then from `site/` run `npx wrangler login`.
+2. Add each game's domain to `site/worker/hosts.ts`.
+3. `npm run build`, then `npx wrangler deploy`.
+4. In the Cloudflare dashboard, open the `daily-trivia` Worker, then
+   **Settings → Domains & Routes**, and add each domain as a custom domain.
+5. Set a usage alert at around 80,000 requests a day (the free plan allows 100,000).
+
+Puzzles are compiled into the Worker, so each content session ends with a
+fresh build and deploy.
 
 Commands below run from the repo root with `PYTHONPATH=pipeline`.
 

@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from trivia.trending import is_excluded, weekly_top
+from trivia.trending import drop_background, is_excluded, weekly_top
 
 MON = date(2019, 7, 15)
 
@@ -48,3 +48,36 @@ class TestIsExcluded:
         assert not is_excluded("Area_51")
         assert not is_excluded("Apollo_11")
         assert not is_excluded("Stranger_Things")
+
+    def test_adult_and_misrouted_search_pages(self):
+        assert is_excluded("XHamster")
+        assert is_excluded("XXXX")
+        assert is_excluded(".xxx")
+        assert not is_excluded("XXXTentacion")  # a real person; left to the frequency rule
+
+
+class TestDropBackground:
+    def weeks(self, n, regular_views=100):
+        # "Always" is in every week at a steady level; "Rare_1".. appear once each.
+        return {MON + timedelta(weeks=i): [("Always", regular_views), (f"Rare_{i}", 50)] for i in range(n)}
+
+    def test_drops_titles_present_in_most_weeks(self):
+        out = drop_background(self.weeks(25))
+        assert all(t != "Always" for top in out.values() for t, _ in top)
+        assert out[MON] == [("Rare_0", 50)]
+
+    def test_keeps_a_frequent_title_in_its_spike_week(self):
+        weeks = self.weeks(25)
+        spike = MON + timedelta(weeks=4)
+        weeks[spike] = [("Always", 1000), ("Rare_4", 50)]
+        out = drop_background(weeks)
+        assert out[spike] == [("Always", 1000), ("Rare_4", 50)]
+        assert ("Always", 100) not in out[MON]
+
+    def test_rare_titles_untouched(self):
+        weeks = self.weeks(25)
+        assert drop_background(weeks)[MON + timedelta(weeks=24)] == [("Rare_24", 50)]
+
+    def test_too_few_weeks_to_judge(self):
+        weeks = self.weeks(5)
+        assert drop_background(weeks) == weeks
