@@ -1,0 +1,8 @@
+node_modules/
+.next/
+out/
+.wrangler/
+__pycache__/
+.venv/
+pipeline/data/
+review/*.json

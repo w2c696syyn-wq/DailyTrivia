@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puzzle Review</title>
+<style>
+  :root {
+    --paper: #f6f1e7; --ink: #1d1b18; --muted: #6b6457; --rule: #d8cfbf;
+    --accept: #2f6b3a; --reject: #a3322a; --card: #fffaf0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #1f1d1a; --ink: #ece6da; --muted: #a39b8c; --rule: #3a362f;
+            --accept: #6fbf7c; --reject: #e0796f; --card: #282521; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+         font: 16px/1.45 system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1, h2 { font-family: Georgia, serif; font-weight: 600; margin: 0 0 8px; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; margin: 16px 0; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  input[type=text], textarea { width: 100%; font: inherit; color: inherit; background: var(--paper);
+         border: 1px solid var(--rule); border-radius: 4px; padding: 6px 8px; }
+  textarea { min-height: 180px; font-family: ui-monospace, monospace; font-size: 14px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button { font: inherit; padding: 8px 14px; border-radius: 4px; border: 1px solid var(--rule);
+           background: var(--card); color: var(--ink); cursor: pointer; }
+  button.accept { background: var(--accept); color: var(--paper); border-color: var(--accept); }
+  button.reject { color: var(--reject); border-color: var(--reject); }
+  ol.top { columns: 2; column-gap: 24px; padding-left: 24px; font-size: 14px; }
+  ol.top li { break-inside: avoid; }
+  .picked { display: grid; grid-template-columns: 1fr 2fr; gap: 6px; }
+  .raw { font-size: 13px; color: var(--muted); white-space: pre-wrap; }
+  kbd { font-size: 12px; border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
+  @media (max-width: 560px) { ol.top { columns: 1; } .picked { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Puzzle review</h1>
+  <p class="muted">Open a queue from <code>review/</code> (written by <code>python -m trivia.candidates</code>).
+    Progress is kept in this browser. Export saves the accepted items as <code>&lt;game&gt;.accepted.json</code>;
+    merge them with <code>python -m trivia.bank merge</code>.</p>
+  <div class="row">
+    <input type="file" id="file" accept=".json">
+    <button id="export">Export accepted</button>
+    <span id="progress" class="muted"></span>
+  </div>
+  <div id="item"></div>
+  <p class="muted">Keys: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> accept · <kbd>Ctrl</kbd>+<kbd>Backspace</kbd> reject ·
+    <kbd>Ctrl</kbd>+<kbd>→</kbd> skip</p>
+</main>
+<script>
+const $ = (s) => document.querySelector(s);
+let game = null, queue = [], at = 0, storeKey = null;
+
+const store = {
+  load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode: no saving */ } },
+};
+
+function guessGame(name, items) {
+  if (name.startsWith("trending") || (items[0] && "week" in items[0])) return "trending";
+  return "ingredient-x";
+}
+
+$("#file").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const items = JSON.parse(await f.text());
+  game = guessGame(f.name, items);
+  storeKey = `review:${game}:${f.name}`;
+  const saved = store.load(storeKey);
+  queue = saved && saved.length === items.length ? saved : items;
+  at = Math.max(0, queue.findIndex((q) => q.status === "pending"));
+  render();
+});
+
+function persist() { store.save(storeKey, queue); }
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function render() {
+  const done = queue.filter((q) => q.status !== "pending").length;
+  const ok = queue.filter((q) => q.status === "accepted").length;
+  $("#progress").textContent = `${done}/${queue.length} reviewed · ${ok} accepted`;
+  const q = queue[at];
+  if (!q) { $("#item").innerHTML = `<div class="card">Nothing left in this queue.</div>`; return; }
+  $("#item").innerHTML = game === "trending" ? trendingCard(q) : ingredientCard(q);
+}
+
+function ingredientCard(q) {
+  return `<div class="card">
+    <h2>${esc(q.name)}</h2>
+    <p class="muted">${esc(q.brands)} · ${q.scans} scans · ${esc(q.status)} · item ${at + 1}</p>
+    <label for="f-lines">Label lines, smallest first (one per line; the first may group several)</label>
+    <textarea id="f-lines">${esc((q.lines || []).join("\n"))}</textarea>
+    <p class="raw">${esc(q.ingredients)}</p>
+    <label for="f-name">Answer name</label><input type="text" id="f-name" value="${esc(q.name)}">
+    <label for="f-aliases">Aliases (comma separated)</label><input type="text" id="f-aliases" value="${esc((q.aliases || []).join(", "))}">
+    <label for="f-cat">Category shown after line 4</label><input type="text" id="f-cat" value="${esc(q.category)}">
+    <label for="f-fact">One fact for the result screen</label><input type="text" id="f-fact" value="${esc(q.fact)}">
+    ${buttons()}
+  </div>`;
+}
+
+function trendingCard(q) {
+  const picked = q.articles || [];
+  const isPicked = (t) => picked.some((a) => a.title === t);
+  return `<div class="card">
+    <h2>Week of ${esc(q.week)}</h2>
+    <p class="muted">Tick 10 articles: the first 5 ticked are shown first, the rest are reveals. Skip any week that
+      would feel crass as a puzzle. Item ${at + 1}</p>
+    <ol class="top">${q.top.map(([t, v]) => `<li><label style="display:inline;color:inherit">
+      <input type="checkbox" data-title="${esc(t)}" ${isPicked(t) ? "checked" : ""}>
+      <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(t)}" target="_blank" rel="noopener">${esc(t.replaceAll("_", " "))}</a>
+      <span class="muted">${(v / 1e6).toFixed(1)}M</span></label></li>`).join("")}</ol>
+    <div id="notes" class="picked"></div>
+    ${buttons()}
+  </div>`;
+}
+
+function buttons() {
+  return `<div class="row" style="margin-top:16px">
+    <button class="accept" data-act="accepted">Accept</button>
+    <button class="reject" data-act="rejected">Reject</button>
+    <button data-act="skip">Skip</button>
+    <button data-act="back">Back</button></div>`;
+}
+
+// Trending: keep a note box per ticked article, in tick order.
+document.addEventListener("change", (e) => {
+  if (!e.target.dataset.title) return;
+  const q = queue[at];
+  q.articles = q.articles || [];
+  const t = e.target.dataset.title;
+  if (e.target.checked) q.articles.push({ title: t, note: "" });
+  else q.articles = q.articles.filter((a) => a.title !== t);
+  drawNotes();
+});
+
+function drawNotes() {
+  const q = queue[at], box = $("#notes");
+  if (!box) return;
+  box.innerHTML = (q.articles || []).map((a, i) => `<span>${i + 1}. ${esc(a.title.replaceAll("_", " "))}</span>
+    <input type="text" data-note="${i}" placeholder="Why it trended" value="${esc(a.note)}">`).join("");
+}
+document.addEventListener("input", (e) => {
+  if (e.target.dataset.note !== undefined) queue[at].articles[+e.target.dataset.note].note = e.target.value;
+});
+
+function collect(q) {
+  if (game === "trending") return null;
+  q.lines = $("#f-lines").value.split("\n").map((s) => s.trim()).filter(Boolean);
+  q.name = $("#f-name").value.trim();
+  q.aliases = $("#f-aliases").value.split(",").map((s) => s.trim()).filter(Boolean);
+  q.category = $("#f-cat").value.trim();
+  q.fact = $("#f-fact").value.trim();
+  return null;
+}
+
+function problems(q) {
+  if (game === "trending") {
+    const a = q.articles || [];
+    if (a.length !== 10) return `Pick exactly 10 articles (${a.length} picked).`;
+    if (a.some((x) => !x.note.trim())) return "Every picked article needs a note.";
+  } else {
+    if (!q.lines.length || q.lines.length > 8) return "Need 1 to 8 label lines.";
+    if (!q.name || !q.category || !q.fact) return "Name, category and fact are all needed.";
+  }
+  return null;
+}
+
+function act(kind) {
+  const q = queue[at];
+  if (!q) return;
+  if (kind === "back") { at = Math.max(0, at - 1); render(); drawNotes(); return; }
+  collect(q);
+  if (kind === "accepted") {
+    const p = problems(q);
+    if (p) { alert(p); return; }
+  }
+  if (kind !== "skip") q.status = kind;
+  persist();
+  at = Math.min(queue.length, at + 1);
+  render(); drawNotes();
+}
+
+document.addEventListener("click", (e) => { if (e.target.dataset.act) act(e.target.dataset.act); });
+document.addEventListener("keydown", (e) => {
+  if (!e.ctrlKey) return;
+  const map = { Enter: "accepted", Backspace: "rejected", ArrowRight: "skip", ArrowLeft: "back" };
+  if (map[e.key]) { e.preventDefault(); act(map[e.key]); }
+});
+
+$("#export").addEventListener("click", () => {
+  if (!game) return;
+  const accepted = queue.filter((q) => q.status === "accepted").map((q) => game === "trending"
+    ? { week: q.week, articles: q.articles }
+    : { name: q.name, aliases: q.aliases || [], category: q.category, ingredients: q.ingredients,
+        lines: q.lines, fact: q.fact, labelChecked: String(new Date().getFullYear()), code: q.code });
+  const blob = new Blob([JSON.stringify(accepted, null, 1)], { type: "application/json" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: `${game}.accepted.json` });
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>

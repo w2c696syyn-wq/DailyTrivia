@@ -1,0 +1,22 @@
+name: Nightly puzzle check
+
+# Fails loudly when any game is missing a puzzle, or has a broken one,
+# in the next 7 UK days. GitHub emails the repo owner on failure.
+on:
+  schedule:
+    - cron: "0 20 * * *" # 20:00 UTC: evening UK time, all year
+  push:
+    paths: ["content/**", "puzzles/**", "pipeline/**"]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r pipeline/requirements.txt
+      - run: python -m pytest -q
+      - run: PYTHONPATH=pipeline python -m trivia.build check
