@@ -1,0 +1,80 @@
+.panel {
+  text-align: left;
+  border-top: 1px solid var(--rule);
+  padding-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.title {
+  font-size: 20px;
+  text-align: center;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.value {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.tileLabel {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.small {
+  text-align: center;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.bars {
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: minmax(16px, auto) 1fr 28px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.label {
+  white-space: nowrap;
+}
+
+.track {
+  height: 18px;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--ink-soft);
+  border-radius: 2px;
+}
+
+.mine {
+  background: var(--accent);
+}
+
+.count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

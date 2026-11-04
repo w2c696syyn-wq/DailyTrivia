@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnswerInput } from "@/components/AnswerInput";
 import { Countdown } from "@/components/Countdown";
 import { ShareButtons } from "@/components/ShareButtons";
+import { StatsPanel, useHistory } from "@/components/StatsPanel";
 import type { Answer } from "@/core/answers";
 import {
   type IngredientXMove,
@@ -16,6 +17,7 @@ import {
 } from "@/core/ingredientX";
 import { loadToday } from "@/core/puzzleSource";
 import { ingredientXShare, ingredientXTier } from "@/core/scoring";
+import { INGREDIENT_X_STATS } from "@/core/stats";
 import { load, save } from "@/core/storage";
 import styles from "./IngredientX.module.css";
 
@@ -115,6 +117,8 @@ function FullLabel({ puzzle, giveaway }: { puzzle: IngredientXPuzzle; giveaway: 
 
 function Result({ puzzle, state, answerName }: { puzzle: IngredientXPuzzle; state: IngredientXState; answerName: string }) {
   const line = solvedOn(state);
+  const today = { date: puzzle.date, number: puzzle.number, score: line };
+  const history = useHistory("ingredient-x", today);
   return (
     <section className={styles.result} aria-live="polite">
       <p className={styles.tier}>{ingredientXTier(line)}</p>
@@ -124,6 +128,14 @@ function Result({ puzzle, state, answerName }: { puzzle: IngredientXPuzzle; stat
       <p className={styles.small}>UK label, checked {puzzle.labelChecked}.</p>
       <ShareButtons text={ingredientXShare(puzzle.number, line, puzzle.lines.length)} />
       <Countdown />
+      <StatsPanel
+        title="Your Basket"
+        history={history}
+        spec={INGREDIENT_X_STATS}
+        today={today}
+        format={(n) => `line ${n}`}
+        winLabel="Solved"
+      />
     </section>
   );
 }

@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { Countdown } from "@/components/Countdown";
 import { ShareButtons } from "@/components/ShareButtons";
+import { StatsPanel, useHistory } from "@/components/StatsPanel";
 import { loadToday } from "@/core/puzzleSource";
 import { TRENDING_POINTS_PER_REVEAL, trendingShare, trendingTier } from "@/core/scoring";
+import { TRENDING_STATS } from "@/core/stats";
 import { load, save } from "@/core/storage";
 import {
   MAX_REVEALS,
@@ -116,6 +118,8 @@ export function TrendingGame() {
 
 function Result({ puzzle, state }: { puzzle: TrendingPuzzle; state: TrendingState }) {
   const r = result(puzzle, state)!;
+  const today = { date: puzzle.date, number: puzzle.number, score: r.score };
+  const history = useHistory("trending", today);
   return (
     <section className={styles.result} aria-live="polite">
       <p className={styles.tier}>{trendingTier(r.score)}</p>
@@ -127,6 +131,13 @@ function Result({ puzzle, state }: { puzzle: TrendingPuzzle; state: TrendingStat
       <p className={styles.score}>{r.score}/100</p>
       <ShareButtons text={trendingShare(puzzle.number, r.weeksOff, state.reveals)} />
       <Countdown />
+      <StatsPanel
+        title="Your Search History"
+        history={history}
+        spec={TRENDING_STATS}
+        today={today}
+        format={(n) => `${n}/100`}
+      />
     </section>
   );
 }
