@@ -21,7 +21,7 @@ _YEAR = re.compile(r"(?<!\d)(1[89]\d\d|20\d\d)(?!\d)")
 ALWAYS_POPULAR = {"Google", "YouTube", "Facebook", "Wikipedia", "Cleopatra"}
 
 # Adult sites, and pages that only get traffic from people searching for them.
-BLOCKED = {"XXX", "XXXX", "XXXX_(beer)", "XXX_(film_series)", "XXX:_Return_of_Xander_Cage", ".xxx",
+BLOCKED = {"XXX", "XXXX", "XXXX_(beer)", "XXX_(film_series)", "XXX_(franchise)", "XXX:_Return_of_Xander_Cage", ".xxx",
            "XHamster", "Pornhub", "XVideos", "XNXX", "Sex"}
 
 # drop_background: a title in at least this share of weeks is background noise...

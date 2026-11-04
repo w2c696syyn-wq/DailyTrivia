@@ -53,6 +53,7 @@ class TestIsExcluded:
         assert is_excluded("XHamster")
         assert is_excluded("XXXX")
         assert is_excluded(".xxx")
+        assert is_excluded("XXX_(franchise)")
         assert not is_excluded("XXXTentacion")  # a real person; left to the frequency rule
 
 

@@ -8,10 +8,12 @@
   :root {
     --paper: #f6f1e7; --ink: #1d1b18; --muted: #6b6457; --rule: #d8cfbf;
     --accept: #2f6b3a; --reject: #a3322a; --card: #fffaf0;
+    --draft: #8a5a00; --draft-bg: #fbf0d6;
   }
   @media (prefers-color-scheme: dark) {
     :root { --paper: #1f1d1a; --ink: #ece6da; --muted: #a39b8c; --rule: #3a362f;
-            --accept: #6fbf7c; --reject: #e0796f; --card: #282521; }
+            --accept: #6fbf7c; --reject: #e0796f; --card: #282521;
+            --draft: #e0b04a; --draft-bg: #33291a; }
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink);
@@ -33,6 +35,10 @@
   ol.top li { break-inside: avoid; }
   .picked { display: grid; grid-template-columns: 1fr 2fr; gap: 6px; }
   .raw { font-size: 13px; color: var(--muted); white-space: pre-wrap; }
+  .draft { background: var(--draft-bg); border-left: 4px solid var(--draft); padding: 6px 10px; margin: 8px 0;
+           font-size: 14px; border-radius: 0 4px 4px 0; }
+  .hint { font-size: 13px; color: var(--muted); margin: 0 0 4px 22px; font-style: italic; }
+  input[type=file] { max-width: 100%; }
   kbd { font-size: 12px; border: 1px solid var(--rule); border-radius: 3px; padding: 0 4px; }
   @media (max-width: 560px) { ol.top { columns: 1; } .picked { grid-template-columns: 1fr; } }
 </style>
@@ -72,11 +78,36 @@ $("#file").addEventListener("change", async (e) => {
   const items = JSON.parse(await f.text());
   game = guessGame(f.name, items);
   storeKey = `review:${game}:${f.name}`;
-  const saved = store.load(storeKey);
-  queue = saved && saved.length === items.length ? saved : items;
+  queue = withSavedProgress(items, store.load(storeKey) || []);
+  // Drafted items first, so review time goes where the AI has already helped.
+  queue.sort((a, b) => hasDraft(b) - hasDraft(a));
   at = Math.max(0, queue.findIndex((q) => q.status === "pending"));
-  render();
+  render(); drawNotes();
 });
+
+const keyOf = (q) => q.code ?? q.week;
+const hasDraft = (q) => Number(Boolean(q.draft || q.draftNotes));
+
+// Keep what the reviewer did in this browser, but take drafts from the file:
+// they may have been added since the last visit.
+function withSavedProgress(items, saved) {
+  const byKey = new Map(saved.map((s) => [keyOf(s), s]));
+  return items.map((item) => {
+    const s = byKey.get(keyOf(item));
+    if (!s) return item;
+    return { ...s, draft: item.draft, draftNotes: item.draftNotes };
+  });
+}
+
+// Copy an item's AI draft into its editable fields once, keeping the original name.
+function applyDraft(q) {
+  if (!q.draft || q.draftApplied) return;
+  q.sourceName = q.name;
+  if (q.draft.name) q.name = q.draft.name;
+  if (q.draft.aliases?.length) q.aliases = q.draft.aliases;
+  if (q.draft.fact) q.fact = q.draft.fact;
+  q.draftApplied = true;
+}
 
 function persist() { store.save(storeKey, queue); }
 
@@ -94,9 +125,12 @@ function render() {
 }
 
 function ingredientCard(q) {
+  applyDraft(q);
   return `<div class="card">
     <h2>${esc(q.name)}</h2>
-    <p class="muted">${esc(q.brands)} · ${q.scans} scans · ${esc(q.status)} · item ${at + 1}</p>
+    <p class="muted">${esc(q.brands)} · ${q.scans} scans · ${esc(q.status)} · item ${at + 1}
+      ${q.sourceName && q.sourceName !== q.name ? ` · Open Food Facts name: ${esc(q.sourceName)}` : ""}</p>
+    ${q.draftApplied ? `<p class="draft">AI draft: check the name, aliases and fact before accepting.${q.draft.fact ? "" : " No fact drafted: the AI wasn't confident, or thought this product too obscure."}</p>` : ""}
     <label for="f-lines">Label lines, smallest first (one per line; the first may group several)</label>
     <textarea id="f-lines">${esc((q.lines || []).join("\n"))}</textarea>
     <p class="raw">${esc(q.ingredients)}</p>
@@ -115,10 +149,12 @@ function trendingCard(q) {
     <h2>Week of ${esc(q.week)}</h2>
     <p class="muted">Tick 10 articles: the first 5 ticked are shown first, the rest are reveals. Skip any week that
       would feel crass as a puzzle. Item ${at + 1}</p>
+    ${q.draftNotes ? `<p class="draft">AI draft notes are shown under the articles and fill in when you tick one. Check each before accepting.</p>` : ""}
     <ol class="top">${q.top.map(([t, v]) => `<li><label style="display:inline;color:inherit">
       <input type="checkbox" data-title="${esc(t)}" ${isPicked(t) ? "checked" : ""}>
       <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(t)}" target="_blank" rel="noopener">${esc(t.replaceAll("_", " "))}</a>
-      <span class="muted">${(v / 1e6).toFixed(1)}M</span></label></li>`).join("")}</ol>
+      <span class="muted">${(v / 1e6).toFixed(1)}M</span></label>
+      ${q.draftNotes?.[t] ? `<div class="hint">${esc(q.draftNotes[t])}</div>` : ""}</li>`).join("")}</ol>
     <div id="notes" class="picked"></div>
     ${buttons()}
   </div>`;
@@ -138,7 +174,7 @@ document.addEventListener("change", (e) => {
   const q = queue[at];
   q.articles = q.articles || [];
   const t = e.target.dataset.title;
-  if (e.target.checked) q.articles.push({ title: t, note: "" });
+  if (e.target.checked) q.articles.push({ title: t, note: q.draftNotes?.[t] || "" });
   else q.articles = q.articles.filter((a) => a.title !== t);
   drawNotes();
 });

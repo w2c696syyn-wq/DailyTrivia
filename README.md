@@ -69,12 +69,18 @@ Commands below run from the repo root with `PYTHONPATH=pipeline`.
    - Trending: set `TRIVIA_CONTACT` (an email or URL for Wikimedia's User-Agent
      policy), then run `python -m trivia.candidates trending --from 2016-01-04 --to 2025-12-28`.
      Daily lists are cached in `pipeline/data/wikimedia/`.
-2. **Review.** Serve the folder (`python -m http.server -d review`), open
-   `review.html` and load the queue. Fix label lines and add aliases and a
-   fact, or pick 10 articles with notes. Then export.
-3. **Merge.** `python -m trivia.bank merge ingredient-x ingredient-x.accepted.json`
-4. **Build.** `python -m trivia.build build ingredient-x --from <next empty day> --days 60 --seed <any>`
-5. **Check.** `python -m trivia.build check`. The same check runs nightly in
+2. **AI drafts (optional).** `python -m trivia.drafts split` writes batches to
+   `review/drafts/in/`. Ask Claude to have one agent per batch write
+   `review/drafts/out/<same name>`: tidy names, aliases and a fact per product,
+   and a "why it trended" note per article. Then `python -m trivia.drafts merge`
+   attaches them to the queues. Drafts never overwrite your own edits.
+3. **Review.** Serve the folder (`python -m http.server -d review`), open
+   `review.html` and load the queue. Drafted items come first, with their
+   drafts filled in and labelled. Fix label lines and check or write the
+   aliases and fact, or pick 10 articles and check their notes. Then export.
+4. **Merge.** `python -m trivia.bank merge ingredient-x ingredient-x.accepted.json`
+5. **Build.** `python -m trivia.build build ingredient-x --from <next empty day> --days 60 --seed <any>`
+6. **Check.** `python -m trivia.build check`. The same check runs nightly in
    GitHub Actions and fails when the next 7 days have a gap or a broken puzzle.
 
 ## Rules the pipeline enforces
