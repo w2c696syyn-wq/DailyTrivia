@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Countdown } from "@/components/Countdown";
 import { ShareButtons } from "@/components/ShareButtons";
 import { StatsPanel, useHistory } from "@/components/StatsPanel";
+import { playSound } from "@/components/sound";
+import { useSettings } from "@/components/useSettings";
 import { loadToday } from "@/core/puzzleSource";
 import { TRENDING_POINTS_PER_REVEAL, trendingShare, trendingTier } from "@/core/scoring";
 import { TRENDING_STATS } from "@/core/stats";
@@ -37,6 +39,7 @@ export function TrendingGame() {
   const [error, setError] = useState<string | null>(null);
   const [state, setState] = useState<TrendingState>(start);
   const [pick, setPick] = useState(0);
+  const [settings] = useSettings();
 
   useEffect(() => {
     loadToday<TrendingPuzzle>("trending")
@@ -55,6 +58,8 @@ export function TrendingGame() {
     const next = play(puzzle!, state, m);
     setState(next);
     save(progressKey(puzzle!), next);
+    const score = result(puzzle!, next)?.score;
+    playSound(score === undefined ? "reveal" : score >= 50 ? "right" : "wrong", settings.sound);
   }
 
   const done = state.status === "done";
@@ -120,6 +125,8 @@ function Result({ puzzle, state }: { puzzle: TrendingPuzzle; state: TrendingStat
   const r = result(puzzle, state)!;
   const today = { date: puzzle.date, number: puzzle.number, score: r.score };
   const history = useHistory("trending", today);
+  const [settings] = useSettings();
+  const url = settings.shareLink ? location.origin + location.pathname : undefined;
   return (
     <section className={styles.result} aria-live="polite">
       <p className={styles.tier}>{trendingTier(r.score)}</p>
@@ -129,7 +136,7 @@ function Result({ puzzle, state }: { puzzle: TrendingPuzzle; state: TrendingStat
         {r.weeksOff === 0 ? "the exact week!" : `${r.weeksOff} week${r.weeksOff === 1 ? "" : "s"} off.`}
       </p>
       <p className={styles.score}>{r.score}/100</p>
-      <ShareButtons text={trendingShare(puzzle.number, r.weeksOff, state.reveals)} />
+      <ShareButtons text={trendingShare(puzzle.number, r.weeksOff, state.reveals, { url })} />
       <Countdown />
       <StatsPanel
         title="Your Search History"

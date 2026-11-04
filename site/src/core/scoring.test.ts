@@ -18,6 +18,13 @@ describe("Ingredient X", () => {
     expect(ingredientXTier(null)).toBe("Still Peckish");
   });
 
+  it("uses an orange square in colour-blind mode and can add the link", () => {
+    expect(ingredientXShare(12, 2, 8, { colourBlind: true })).toBe("🧾 Ingredient X #12  ⬛🟧 2/8");
+    expect(ingredientXShare(12, 1, 8, { url: "https://ingredientx.example" })).toBe(
+      "🧾 Ingredient X #12  🟥 1/8\nhttps://ingredientx.example",
+    );
+  });
+
   it("shares misses then the solving line, with no spoilers", () => {
     expect(ingredientXShare(12, 4, 8)).toBe("🧾 Ingredient X #12  ⬛⬛⬛🟥 4/8");
     expect(ingredientXShare(12, 1, 8)).toBe("🧾 Ingredient X #12  🟥 1/8");
@@ -55,5 +62,8 @@ describe("Trending", () => {
     expect(trendingShare(9, 3, 2)).toBe("🔥 Trending #9  📍 3 weeks off · 2 reveals  86/100");
     expect(trendingShare(9, 1, 1)).toBe("🔥 Trending #9  📍 1 week off · 1 reveal  94/100");
     expect(trendingShare(9, 0, 0)).toBe("🔥 Trending #9  📍 Exact week! · 0 reveals  100/100");
+    expect(trendingShare(9, 0, 0, { url: "https://trending.example" })).toBe(
+      "🔥 Trending #9  📍 Exact week! · 0 reveals  100/100\nhttps://trending.example",
+    );
   });
 });

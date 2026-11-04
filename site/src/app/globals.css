@@ -91,3 +91,23 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* The same, switched on in settings. */
+:root[data-reduce-motion] *,
+:root[data-reduce-motion] *::before,
+:root[data-reduce-motion] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Colour-blind mode: blue for right answers instead of green. Each game's
+   accent switches too (see GameFrame). */
+:root[data-colour-blind] {
+  --good: #0072b2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-colour-blind]:not([data-theme="light"]) {
+    --good: #56b4e9;
+  }
+}

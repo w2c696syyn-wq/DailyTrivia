@@ -5,6 +5,8 @@ import { AnswerInput } from "@/components/AnswerInput";
 import { Countdown } from "@/components/Countdown";
 import { ShareButtons } from "@/components/ShareButtons";
 import { StatsPanel, useHistory } from "@/components/StatsPanel";
+import { playSound } from "@/components/sound";
+import { useSettings } from "@/components/useSettings";
 import type { Answer } from "@/core/answers";
 import {
   type IngredientXMove,
@@ -29,6 +31,7 @@ export function IngredientXGame() {
   const [data, setData] = useState<Loaded | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [state, setState] = useState<IngredientXState>(start);
+  const [settings] = useSettings();
 
   useEffect(() => {
     loadToday<IngredientXPuzzle>("ingredient-x")
@@ -49,6 +52,7 @@ export function IngredientXGame() {
     const next = play(puzzle, state, m);
     setState(next);
     save(progressKey(puzzle), next);
+    playSound(next.status === "won" ? "right" : "guess" in m ? "wrong" : "reveal", settings.sound);
   }
 
   const finished = state.status !== "playing";
@@ -119,6 +123,8 @@ function Result({ puzzle, state, answerName }: { puzzle: IngredientXPuzzle; stat
   const line = solvedOn(state);
   const today = { date: puzzle.date, number: puzzle.number, score: line };
   const history = useHistory("ingredient-x", today);
+  const [settings] = useSettings();
+  const url = settings.shareLink ? location.origin + location.pathname : undefined;
   return (
     <section className={styles.result} aria-live="polite">
       <p className={styles.tier}>{ingredientXTier(line)}</p>
@@ -126,7 +132,7 @@ function Result({ puzzle, state, answerName }: { puzzle: IngredientXPuzzle; stat
       <p>{line ? `Solved on line ${line} of ${puzzle.lines.length}.` : "Not this time."}</p>
       <p className={styles.fact}>{puzzle.fact}</p>
       <p className={styles.small}>UK label, checked {puzzle.labelChecked}.</p>
-      <ShareButtons text={ingredientXShare(puzzle.number, line, puzzle.lines.length)} />
+      <ShareButtons text={ingredientXShare(puzzle.number, line, puzzle.lines.length, { colourBlind: settings.colourBlind, url })} />
       <Countdown />
       <StatsPanel
         title="Your Basket"

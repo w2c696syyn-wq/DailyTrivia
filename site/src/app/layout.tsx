@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Fraunces } from "next/font/google";
+import { EARLY_SETTINGS_SCRIPT } from "@/core/settings";
 import "./globals.css";
 
 const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"] });
@@ -23,7 +24,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-GB" className={`${fraunces.variable} ${atkinson.variable}`}>
+    // The early script may add data-* attributes before React hydrates.
+    <html lang="en-GB" className={`${fraunces.variable} ${atkinson.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: EARLY_SETTINGS_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   );

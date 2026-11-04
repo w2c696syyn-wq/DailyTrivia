@@ -18,9 +18,19 @@ export function ingredientXTier(solvedOn: number | null) {
   return "Snacker";
 }
 
-export function ingredientXShare(puzzle: number, solvedOn: number | null, totalLines: number): string {
-  const squares = solvedOn === null ? "⬛".repeat(totalLines) : "⬛".repeat(solvedOn - 1) + "🟥";
-  return `🧾 Ingredient X #${puzzle}  ${squares} ${solvedOn ?? "X"}/${totalLines}`;
+export type ShareOptions = { colourBlind?: boolean; url?: string };
+
+const withLink = (text: string, url?: string) => (url ? `${text}\n${url}` : text);
+
+export function ingredientXShare(
+  puzzle: number,
+  solvedOn: number | null,
+  totalLines: number,
+  { colourBlind = false, url }: ShareOptions = {},
+): string {
+  const hit = colourBlind ? "🟧" : "🟥";
+  const squares = solvedOn === null ? "⬛".repeat(totalLines) : "⬛".repeat(solvedOn - 1) + hit;
+  return withLink(`🧾 Ingredient X #${puzzle}  ${squares} ${solvedOn ?? "X"}/${totalLines}`, url);
 }
 
 // ── Trending ────────────────────────────────────────────────────────────────
@@ -46,7 +56,10 @@ export function trendingTier(score: number) {
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
-export function trendingShare(puzzle: number, weeksOff: number, reveals: number): string {
+export function trendingShare(puzzle: number, weeksOff: number, reveals: number, { url }: ShareOptions = {}): string {
   const distance = weeksOff === 0 ? "Exact week!" : `${plural(weeksOff, "week")} off`;
-  return `🔥 Trending #${puzzle}  📍 ${distance} · ${plural(reveals, "reveal")}  ${trendingScore(weeksOff, reveals)}/100`;
+  return withLink(
+    `🔥 Trending #${puzzle}  📍 ${distance} · ${plural(reveals, "reveal")}  ${trendingScore(weeksOff, reveals)}/100`,
+    url,
+  );
 }
