@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Countdown } from "@/components/Countdown";
+import { NextGame } from "@/components/NextGame";
 import { ShareButtons } from "@/components/ShareButtons";
 import { StatsPanel, useHistory } from "@/components/StatsPanel";
 import { playSound } from "@/components/sound";
@@ -138,6 +139,7 @@ function Result({ puzzle, state }: { puzzle: TrendingPuzzle; state: TrendingStat
       <p className={styles.score}>{r.score}/100</p>
       <ShareButtons text={trendingShare(puzzle.number, r.weeksOff, state.reveals, { url })} />
       <Countdown />
+      <NextGame current="trending" />
       <StatsPanel
         title="Your Search History"
         history={history}

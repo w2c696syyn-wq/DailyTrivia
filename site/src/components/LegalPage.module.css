@@ -1,0 +1,32 @@
+.page {
+  padding-top: 24px;
+  padding-bottom: 48px;
+  display: grid;
+  gap: 14px;
+}
+
+.page h2 {
+  font-size: 22px;
+  margin-top: 12px;
+}
+
+.page ul {
+  margin-left: 20px;
+  display: grid;
+  gap: 6px;
+}
+
+.back {
+  font-size: 14px;
+}
+
+.updated {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.missing {
+  background: #fde68a;
+  color: #111;
+  padding: 0 4px;
+}

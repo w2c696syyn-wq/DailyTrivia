@@ -46,7 +46,9 @@ way its own domain will. It plays only if `puzzles/` has a puzzle for today.
 ## Going live (Cloudflare)
 
 1. Create a free Cloudflare account, then from `site/` run `npx wrangler login`.
-2. Add each game's domain to `site/worker/hosts.ts`.
+2. Set each game's `domain` in `site/src/core/games.ts` (the Worker and the
+   cross-links both use it), and fill in your details in `site/src/core/site.ts`:
+   the privacy notice and terms show a yellow marker until you do.
 3. `npm run build`, then `npx wrangler deploy`.
 4. In the Cloudflare dashboard, open the `daily-trivia` Worker, then
    **Settings → Domains & Routes**, and add each domain as a custom domain.

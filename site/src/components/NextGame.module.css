@@ -1,0 +1,33 @@
+.card {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  padding: 14px 16px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-left: 6px solid var(--next-accent);
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+:global(:root[data-colour-blind]) .card {
+  border-left-color: var(--ink-soft);
+}
+
+.kicker {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+
+.name {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.pitch {
+  font-size: 14px;
+  color: var(--ink-soft);
+}

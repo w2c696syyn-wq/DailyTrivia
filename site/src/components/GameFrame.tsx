@@ -2,7 +2,7 @@
 // shared footer with the other games and credits.
 
 import Link from "next/link";
-import { GAMES, type GameId, gameById } from "@/core/games";
+import { type GameId, gameById, gameHref, otherGames } from "@/core/games";
 import styles from "./GameFrame.module.css";
 import { SettingsButton } from "./SettingsButton";
 
@@ -10,7 +10,7 @@ type Props = { game: GameId; howToPlay: string[]; children: React.ReactNode };
 
 export function GameFrame({ game, howToPlay, children }: Props) {
   const g = gameById(game);
-  const others = GAMES.filter((o) => o.id !== game && o.live);
+  const others = otherGames(game);
   return (
     <div
       className={styles.page}
@@ -38,13 +38,14 @@ export function GameFrame({ game, howToPlay, children }: Props) {
             {others.map((o, i) => (
               <span key={o.id}>
                 {i > 0 && " · "}
-                <Link href={`/${o.id}/`}>{o.name}</Link>
+                <a href={gameHref(o)}>{o.name}</a>
               </span>
             ))}
           </p>
         )}
         <p>
-          <Link href="/credits/">Credits and data sources</Link>
+          <Link href="/credits/">Credits</Link> · <Link href="/privacy/">Privacy</Link> ·{" "}
+          <Link href="/terms/">Terms</Link>
         </p>
       </footer>
     </div>

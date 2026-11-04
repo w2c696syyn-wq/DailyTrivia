@@ -10,6 +10,8 @@ export type Game = {
   /** Used instead of accent in colour-blind mode (Okabe-Ito palette). */
   accentColourBlind: string;
   live: boolean;
+  /** The game's own domain once bought, e.g. "ingredientx.co.uk". The Worker maps it to this game. */
+  domain: string | null;
 };
 
 export const GAMES: Game[] = [
@@ -20,6 +22,7 @@ export const GAMES: Game[] = [
     accent: "#c8372d",
     accentColourBlind: "#d55e00",
     live: true,
+    domain: null,
   },
   {
     id: "trending",
@@ -28,7 +31,14 @@ export const GAMES: Game[] = [
     accent: "#1f5fd1",
     accentColourBlind: "#0072b2",
     live: true,
+    domain: null,
   },
 ];
 
 export const gameById = (id: GameId) => GAMES.find((g) => g.id === id)!;
+
+/** Where to send a player for a game: its own domain once it has one, else its page on this site. */
+export const gameHref = (g: Game) => (g.domain ? `https://${g.domain}/` : `/${g.id}/`);
+
+/** The other live games, for cross-links. */
+export const otherGames = (id: GameId) => GAMES.filter((g) => g.id !== id && g.live);

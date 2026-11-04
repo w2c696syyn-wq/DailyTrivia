@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnswerInput } from "@/components/AnswerInput";
 import { Countdown } from "@/components/Countdown";
+import { NextGame } from "@/components/NextGame";
 import { ShareButtons } from "@/components/ShareButtons";
 import { StatsPanel, useHistory } from "@/components/StatsPanel";
 import { playSound } from "@/components/sound";
@@ -134,6 +135,7 @@ function Result({ puzzle, state, answerName }: { puzzle: IngredientXPuzzle; stat
       <p className={styles.small}>UK label, checked {puzzle.labelChecked}.</p>
       <ShareButtons text={ingredientXShare(puzzle.number, line, puzzle.lines.length, { colourBlind: settings.colourBlind, url })} />
       <Countdown />
+      <NextGame current="ingredient-x" />
       <StatsPanel
         title="Your Basket"
         history={history}
